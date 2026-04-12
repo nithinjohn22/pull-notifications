@@ -2,10 +2,16 @@
   "name": "pull-notifications",
   "displayName": "Pull Notifications",
   "description": "Notify when pulling latest changes in Git",
+  "publisher": "Nithin-John",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.80.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nithinjohn22/pull-notifications.git"
+  },
+  "icon": "logo.ico",
   "activationEvents": [
     "onCommand:pullNotifications.pull"
   ],
