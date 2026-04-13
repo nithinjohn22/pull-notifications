@@ -3,7 +3,7 @@
   "displayName": "Pull Notifications",
   "description": "Notify when pulling latest changes in Git",
   "publisher": "Nithin-John",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.80.0"
   },
@@ -11,10 +11,8 @@
     "type": "git",
     "url": "https://github.com/nithinjohn22/pull-notifications.git"
   },
-  "icon": "logo.ico",
-  "activationEvents": [
-    "onCommand:pullNotifications.pull"
-  ],
+  "icon": "icon.png",
+  "activationEvents": ["onStartupFinished"],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
@@ -32,8 +30,5 @@
     "@types/node": "^18.0.0",
     "@types/vscode": "^1.80.0",
     "typescript": "^5.0.0"
-  },
-  "activationEvents": [
-  "*"
-]
+  }
 }

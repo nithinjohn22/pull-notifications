@@ -63,7 +63,7 @@ you when updates are available --- so you never miss changes again.
 
 ### Manual Installation
 
-code --install-extension pull-notifications-0.0.1.vsix
+code --install-extension pull-notifications-0.0.2.vsix
 
 ------------------------------------------------------------------------
 
