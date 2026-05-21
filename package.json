@@ -3,7 +3,7 @@
   "displayName": "Pull Notifications",
   "description": "Notify when pulling latest changes in Git",
   "publisher": "Nithin-John",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.80.0"
   },
