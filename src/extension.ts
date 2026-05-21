@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { exec } from 'child_process';
 
 let pullStatusBar: vscode.StatusBarItem | undefined;
@@ -10,6 +11,8 @@ function hasTrackedChanges(statusOut: string): boolean {
   return statusOut.split('\n').some(line => line.trim() && !line.startsWith('??'));
 }
 
+let checkForUpdatesRef: (() => void) | undefined;
+
 function doPull(cwd: string) {
   exec('git pull', { cwd }, (pullErr) => {
     if (pullErr) {
@@ -18,6 +21,7 @@ function doPull(cwd: string) {
       pullStatusBar?.hide();
       lastPopupBehindCount = 0;
       vscode.window.showInformationMessage('✅ Pulled latest changes.');
+      checkForUpdatesRef?.();
     }
   });
 }
@@ -100,31 +104,43 @@ function waitForCleanThenUpdateBar(cwd: string, behindCount: number, context: vs
 export function activate(context: vscode.ExtensionContext) {
   console.log('Auto Pull Notifier Activated ✅');
 
-  const checkForUpdates = () => {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders) return;
+  const workspaceFolders = vscode.workspace.workspaceFolders;
+  if (!workspaceFolders) return;
+  const cwd = workspaceFolders[0].uri.fsPath;
 
-    const cwd = workspaceFolders[0].uri.fsPath;
-
-    exec('git fetch', { cwd }, (fetchError) => {
-      if (fetchError) return;
-
-      exec('git rev-list --count HEAD..@{u}', { cwd }, (err, stdout) => {
-        if (err) return;
-
-        const behindCount = parseInt(stdout.trim(), 10);
-
-        if (behindCount > 0) {
-          showPullStatusBar(cwd, behindCount, context);
-        } else {
-          pullStatusBar?.hide();
-        }
-      });
+  const checkBehindCount = () => {
+    exec('git rev-list --count HEAD..@{u}', { cwd }, (err, stdout) => {
+      if (err) return;
+      const behindCount = parseInt(stdout.trim(), 10);
+      if (behindCount > 0) {
+        showPullStatusBar(cwd, behindCount, context);
+      } else {
+        pullStatusBar?.hide();
+        lastPopupBehindCount = 0;
+      }
     });
   };
 
-  checkForUpdates();
+  const checkForUpdates = () => {
+    exec('git fetch', { cwd }, (fetchError) => {
+      if (fetchError) return;
+      checkBehindCount();
+    });
+  };
 
+  checkForUpdatesRef = checkForUpdates;
+
+  // Watch .git/FETCH_HEAD — updated by any fetch (VS Code git, terminal, etc.)
+  const fetchHeadPattern = new vscode.RelativePattern(
+    path.join(cwd, '.git'),
+    'FETCH_HEAD'
+  );
+  const fetchWatcher = vscode.workspace.createFileSystemWatcher(fetchHeadPattern);
+  fetchWatcher.onDidChange(checkBehindCount);
+  fetchWatcher.onDidCreate(checkBehindCount);
+  context.subscriptions.push(fetchWatcher);
+
+  checkForUpdates();
   const interval = setInterval(checkForUpdates, 5 * 60 * 1000);
   context.subscriptions.push({ dispose: () => clearInterval(interval) });
 }
