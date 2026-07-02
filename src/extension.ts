@@ -14,9 +14,16 @@ function hasTrackedChanges(statusOut: string): boolean {
 let checkForUpdatesRef: (() => void) | undefined;
 
 function doPull(cwd: string) {
-  exec('git pull', { cwd }, (pullErr) => {
+  exec('git pull --ff-only', { cwd }, (pullErr, _stdout, stderr) => {
     if (pullErr) {
-      vscode.window.showErrorMessage(`Pull failed: ${pullErr.message}`);
+      if (/divergent branches|not possible to fast-forward|Not possible to fast-forward/i.test(stderr)) {
+        vscode.window.showErrorMessage(
+          'Pull failed: your branch has diverged from the remote and cannot be fast-forwarded. ' +
+          'Please merge or rebase manually in the terminal.'
+        );
+      } else {
+        vscode.window.showErrorMessage(`Pull failed: ${pullErr.message}`);
+      }
     } else {
       pullStatusBar?.hide();
       lastPopupBehindCount = 0;
