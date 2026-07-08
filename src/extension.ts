@@ -2,6 +2,29 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { exec } from 'child_process';
 
+function playNotificationSound(context: vscode.ExtensionContext) {
+  const config = vscode.workspace.getConfiguration('pullNotifications');
+  if (!config.get<boolean>('sound.enabled', true)) return;
+
+  const customPath = config.get<string>('sound.path', '');
+  const soundPath = customPath || path.join(context.extensionPath, 'media', 'notify.wav');
+
+  let cmd: string;
+  switch (process.platform) {
+    case 'darwin':
+      cmd = `afplay "${soundPath}"`;
+      break;
+    case 'win32':
+      cmd = `powershell -c (New-Object Media.SoundPlayer '${soundPath}').PlaySync()`;
+      break;
+    default:
+      cmd = `paplay "${soundPath}" || aplay "${soundPath}"`;
+      break;
+  }
+
+  exec(cmd, () => { /* ignore playback errors (e.g. missing audio player) */ });
+}
+
 let pullStatusBar: vscode.StatusBarItem | undefined;
 let pendingPull: { cwd: string; behindCount: number; context: vscode.ExtensionContext } | undefined;
 let lastPopupBehindCount = 0;  // only show popup when count increases
@@ -66,6 +89,7 @@ function showPullStatusBar(cwd: string, behindCount: number, context: vscode.Ext
   // Only show popup when commit count increases (new commits arrived), not every interval tick
   if (behindCount > lastPopupBehindCount) {
     lastPopupBehindCount = behindCount;
+    playNotificationSound(context);
     vscode.window.showInformationMessage(
       `🚨 ${behindCount} new commit(s) available. Pull now?`,
       'Pull Now'

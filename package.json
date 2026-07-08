@@ -20,7 +20,22 @@
         "command": "pullNotifications.pull",
         "title": "Pull with Notification"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Pull Notifications",
+      "properties": {
+        "pullNotifications.sound.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Play a sound when new commits are detected on the remote."
+        },
+        "pullNotifications.sound.path": {
+          "type": "string",
+          "default": "",
+          "description": "Optional path to a custom .wav/.mp3 file to play instead of the bundled sound."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "tsc -p ./",

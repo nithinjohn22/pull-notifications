@@ -46,6 +46,18 @@ you when updates are available --- so you never miss changes again.
 
 ------------------------------------------------------------------------
 
+## 🔔 Settings
+
+  --------------------------------------------------------------------------------------------
+  Setting                            Description
+  ----------------------------------- --------------------------------------------------------
+  `pullNotifications.sound.enabled`   Play a sound when new commits are detected (default: `true`)
+  `pullNotifications.sound.path`      Optional path to a custom `.wav`/`.mp3` file to play instead of the bundled sound
+
+  --------------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------
+
 ## ⚙️ Requirements
 
 -   Git must be installed on your system\
