@@ -37,7 +37,11 @@ function hasTrackedChanges(statusOut: string): boolean {
 let checkForUpdatesRef: (() => void) | undefined;
 
 function doPull(cwd: string) {
-  exec('git pull --ff-only', { cwd }, (pullErr, _stdout, stderr) => {
+  // Merge the already-fetched upstream directly instead of running a bare
+  // `git pull`, which re-fetches and can end up with more than one ref
+  // marked "for-merge" in FETCH_HEAD (e.g. multiple branch.<name>.merge
+  // entries), causing "Cannot fast-forward to multiple branches".
+  exec('git merge --ff-only @{u}', { cwd }, (pullErr, _stdout, stderr) => {
     if (pullErr) {
       if (/divergent branches|not possible to fast-forward|Not possible to fast-forward/i.test(stderr)) {
         vscode.window.showErrorMessage(
